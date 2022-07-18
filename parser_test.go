@@ -1,4 +1,4 @@
-package TestCleanUp 
+package cleanupInput
 import "testing"
 const expectedOut =`[DEFAULT]
 ServerAliveInterval = 45
