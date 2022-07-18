@@ -14,7 +14,10 @@ func cleanupInput(ini_input string) string {
 		if scanner.Text() == "" {
 			continue
 		}
-		tmp = strings.TrimPrefix(tmp," ")
+		if strings.HasPrefix(tmp, ";") {
+			 	continue
+			}
+		tmp = strings.TrimLeft(tmp,"! ||!\t")
 		ini_WithNoComments += tmp + "\n"
 		
 	}
