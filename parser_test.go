@@ -91,7 +91,8 @@ func TestGetSectionNames(t *testing.T){
 	parser1:= Parser{wanted_parsedMap}
 	sections:= parser1.GetSectionNames()
 	expected := []string{"DEFAULT","bitbucket.null","topsecret.server.com"}
-	if  !reflect.DeepEqual(sections, expected )  {
+
+	if  !contains(expected,sections)   {
 		t.Errorf("expected '%s' but got '%s'", expected, sections)
 	}	
 }
@@ -159,3 +160,17 @@ func TestSaveToFile(t *testing.T){
 	}
 }
 
+
+func contains(expected []string, out []string) bool {
+	flag := false
+	for _, expected_name := range expected {
+		flag=false
+		for _, out_name := range out {
+			if expected_name == out_name {
+				flag=true
+				break
+			}
+		}
+	}
+	return flag
+}
