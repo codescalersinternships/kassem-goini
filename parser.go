@@ -64,60 +64,35 @@ func (parser *Parser) LoadFromFile(filePath string) (err error) {
 	abs_path,_ :=filepath.Abs(".")
 	inputString, err := ioutil.ReadFile(abs_path+filePath) 
     if err != nil {
-        return err
+        return errors.New("open {"+filePath+"}: no such file ")
     }
 	parser.nested_map, err= Parse(string(inputString))
-	for k, v := range parser.nested_map {
-		fmt.Println(k)
-		for o,m := range v {
-			fmt.Println(o,m)
-		}
-	}
+	
 	return nil 
 }
-func GetSectionNames(input_list []string) []string {
+func (parser *Parser)GetSectionNames() []string {
 	res := []string{}
-		for _,item := range input_list {
-			if item[0] == '[' && item[len([]rune(item))-1] == ']' {
-				res = append(res,item[1:len([]rune(item))-1])
-			}
-		}
-		return res
-}
-func GetSections(input_list []string) map[string]map[string]string{
-	//map of maps
-	sections:= map[string]map[string]string{}
-	for index,item := range input_list{
-		if item[0] == '[' && item[len([]rune(item))-1] == ']'{
-			section:= item[1:len([]rune(item))-1]
-			sectionMap:=map[string]string{}
-			//contains section's keys and values
-			for j:= index+1; j<len(input_list); j++{
-				if strings.HasPrefix(input_list[j],"[") && strings.HasSuffix(input_list[j],"]") {
-					index = j - 1
-					break
-				}
-				if input_list[j] == "="{
-					sectionMap[input_list[j-1]]= input_list[j+1]
-				}
-			}
-		sections[section]= sectionMap
-	
-		}	
+	for title, _ := range  parser.nested_map {
+		res = append(res, title)
 	}
-	return sections
+	return res
+
+}
+func (parser *Parser)GetSections() map[string]map[string]string{
+	return parser.nested_map
 }
 
-func Get(sections map[string]map[string]string, section_name string, key string) string {
-		value := sections[section_name][key]
-		return value
+func (parser *Parser)Get(section_name string, key string) string {
+		return parser.nested_map[section_name][key]
 }
-func Set(sections map[string]map[string]string, section_name string, key string, value string) map[string]map[string]string {
-	sections[section_name][key] = value
-	return sections
+
+func (parser *Parser)Set(section_name string, key string, value string) map[string]map[string]string {
+	parser.nested_map[section_name][key] = value
+	return parser.nested_map
 }
 
 func (parser *Parser)ToString() string {
+
 	ini_string:= ""
 	for section, keyAndValue:= range parser.nested_map{
 		fmt.Println(section)
@@ -139,3 +114,4 @@ func  SaveToFile(filePath string,ini_string string) (err error) {
 	_, err = file.WriteString(ini_string)
 	return err
 }
+
