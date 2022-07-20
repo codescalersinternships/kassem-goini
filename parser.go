@@ -1,39 +1,80 @@
 package parser 
 
-// import "fmt"
+import "fmt"
 import (
 	"bufio"
  	"strings"
 	"os"
+	"io/ioutil"
+	"errors"
+	"path/filepath"
 )
+type Parser struct { 
+	nested_map map[string]map[string]string
+}
 
-
-func cleanupInput(ini_input string) string {
-	var tmp string
+func Parse(ini_input string) (map[string]map[string]string,error)  {
+	var tmp,title string
 	scanner := bufio.NewScanner(strings.NewReader(ini_input))
-	var ini_WithNoComments string
+	out_ini:= make(map[string]map[string]string)  
 	for scanner.Scan() {
-	
-		tmp = scanner.Text()
+		////////////////////
+		// clean up input //
+		////////////////////
 		if scanner.Text() == "" {
 			continue
 		}
-		if strings.HasPrefix(tmp, ";") {
+		if strings.HasPrefix(scanner.Text() , ";") {
 			 	continue
 			}
-		tmp = strings.TrimLeft(tmp,"! ||!\t")
-		ini_WithNoComments += tmp + "\n"
+		
+		tmp = strings.TrimLeft(scanner.Text(),"! ||!\t")
+		////////////////////
+		// pars ini input //
+		////////////////////
+		if tmp[0] == '[' && tmp[len(tmp)-1] == ']'{
+			title = tmp[1:len(tmp)-1]
+			strings.TrimSpace(title)
+			//create new map section with title
+			out_ini[title]= make(map[string]string)
+		} else {
+			key_val:= strings.Split(tmp,"=")
+			//to avoid index out of range
+			if len(key_val)==2{
+				out_ini[title][strings.TrimSpace(key_val[0])]= strings.TrimSpace(key_val[1])
+			}
+		}
 		
 	}
-	ini_WithNoComments = strings.TrimSuffix(ini_WithNoComments, "\n")
-		return ini_WithNoComments
+	return out_ini ,nil
 }
 
-func loadString(inputFile string) []string{
-	input_list := strings.Fields(inputFile)
-	return input_list
+func (parser *Parser) LoadFromString(inputString string) (err error) {
+	if len(inputString)!=0 {
+		parser.nested_map, err= Parse(inputString)
+
+	}else{
+		
+		return errors.New("invalid input: empty string")
+	}
+	return nil
 }
 
+func (parser *Parser) LoadFromFile(filePath string) (err error) {
+	abs_path,_ :=filepath.Abs(".")
+	inputString, err := ioutil.ReadFile(abs_path+filePath) 
+    if err != nil {
+        return err
+    }
+	parser.nested_map, err= Parse(string(inputString))
+	for k, v := range parser.nested_map {
+		fmt.Println(k)
+		for o,m := range v {
+			fmt.Println(o,m)
+		}
+	}
+	return nil 
+}
 func GetSectionNames(input_list []string) []string {
 	res := []string{}
 		for _,item := range input_list {
@@ -76,9 +117,10 @@ func Set(sections map[string]map[string]string, section_name string, key string,
 	return sections
 }
 
-func ToString(sections map[string]map[string]string) string {
+func (parser *Parser)ToString() string {
 	ini_string:= ""
-	for section, keyAndValue:= range sections{
+	for section, keyAndValue:= range parser.nested_map{
+		fmt.Println(section)
 		ini_string += "["+section+"]\n"
 		for key, value := range keyAndValue{
 			ini_string += key + " = "+value+"\n"
