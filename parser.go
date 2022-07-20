@@ -1,8 +1,11 @@
 package parser 
 
 // import "fmt"
-import "bufio"
-import "strings"
+import (
+	"bufio"
+ 	"strings"
+	"os"
+)
 
 
 func cleanupInput(ini_input string) string {
@@ -71,4 +74,26 @@ func Get(sections map[string]map[string]string, section_name string, key string)
 func Set(sections map[string]map[string]string, section_name string, key string, value string) map[string]map[string]string {
 	sections[section_name][key] = value
 	return sections
+}
+
+func ToString(sections map[string]map[string]string) string {
+	ini_string:= ""
+	for section, keyAndValue:= range sections{
+		ini_string += "["+section+"]\n"
+		for key, value := range keyAndValue{
+			ini_string += key + " = "+value+"\n"
+		}
+	}
+	return strings.TrimSuffix(ini_string, "\n")
+}
+
+
+func  SaveToFile(filePath string,ini_string string) (err error) {
+	file, err := os.Create(filePath)
+	defer file.Close()
+	if err != nil {
+		return err
+	}
+	_, err = file.WriteString(ini_string)
+	return err
 }

@@ -48,3 +48,13 @@ func TestSet(t *testing.T) {
 	}
 
 }
+func TestToString(t *testing.T) {
+	input:= cleanupInput(iniTemplate)
+	result_map := Set(GetSections(loadString(input)),"DEFAULT","test","15")
+	got:= ToString(result_map)
+	want:="[DEFAULT]\nServerAliveInterval = 45\nCompression = yes\nCompressionLevel = 9\nForwardX11 = yes\ntest = 15\n[bitbucket.org]\nUser = hg\n[topsecret.server.com]\nPort = 50022\nForwardX11 = no"
+	if  !reflect.DeepEqual(got, want)  {
+		t.Errorf("expected '%s' but got '%s'", want,got)
+	}
+}
+
