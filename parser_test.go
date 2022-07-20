@@ -1,80 +1,31 @@
-package cleanupInput
+package parser
 import "testing"
-const expectedOut =`[DEFAULT]
-ServerAliveInterval = 45
-Compression = yes
-CompressionLevel = 9
-ForwardX11 = yes
-[bitbucket.org]
-User = hg
-[topsecret.server.com]
-Port = 50022
-ForwardX11 = no`
-func TestCleanUp(t *testing.T){
-	
-	t.Run("impty lines",func(t *testing.T){ 
-		var iniTemplate =`
-[DEFAULT]
-ServerAliveInterval = 45
-Compression = yes
-CompressionLevel = 9
+import "reflect"
+var iniTemplate ="\n;sec1\n[DEFAULT]\nServerAliveInterval = 45\n  \tCompression = yes\nCompressionLevel = 9\n;hello \nForwardX11 = yes\n[bitbucket.org]\n;comments\nUser = hg\n[topsecret.server.com]\nPort = 50022\nForwardX11 = no"
+func TestCleanUp(t *testing.T){	
 
+	cleaned_up:= cleanupInput(iniTemplate)
+	expected := "[DEFAULT]\nServerAliveInterval = 45\nCompression = yes\nCompressionLevel = 9\nForwardX11 = yes\n[bitbucket.org]\nUser = hg\n[topsecret.server.com]\nPort = 50022\nForwardX11 = no"
+	if cleaned_up != expected {
+		t.Errorf("expected '%s' but got '%s'", expected, cleaned_up)
+	}	
+}
 
-ForwardX11 = yes
-[bitbucket.org]
+func TestGetSectionNames(t *testing.T){
+	input:= cleanupInput(iniTemplate)
+	sections:= GetSectionNames(loadString(input))
+	expected := []string{"DEFAULT","bitbucket.org","topsecret.server.com"}
+	if  !reflect.DeepEqual(sections, expected )  {
+		t.Errorf("expected '%s' but got '%s'", expected, sections)
+	}	
+}
 
-User = hg
-[topsecret.server.com]
-Port = 50022
-ForwardX11 = no`
-	noComments:= cleanupInput(iniTemplate)
-	expected := expectedOut
-	if noComments != expected {
-		t.Errorf("expected '%s' but got '%s'", expected, noComments)
-	}
-})
-
-	t.Run("with comments",func(t *testing.T){ 
-	var iniTemplate =`
-;sec1
-[DEFAULT]
-ServerAliveInterval = 45
-Compression = yes
-CompressionLevel = 9
-;hello 
-ForwardX11 = yes
-[bitbucket.org]
-;comments
-User = hg
-[topsecret.server.com]
-Port = 50022
-ForwardX11 = no`
-	noComments:= cleanupInput(iniTemplate)
-	expected := expectedOut
-	if noComments != expected {
-		t.Errorf("expected '%s' but got '%s'", expected, noComments)
-	}
-})
-t.Run("with pre white spaces and tab",func(t *testing.T){ 
-	var iniTemplate =`
-;sec1
-		[DEFAULT]
-ServerAliveInterval = 45
-  Compression = yes
-	 CompressionLevel = 9
-;hello 
-ForwardX11 = yes
-[bitbucket.org]
-;comments
-User = hg
-[topsecret.server.com]
-Port = 50022
-ForwardX11 = no`
-	noComments:= cleanupInput(iniTemplate)
-	expected := expectedOut
-	if noComments != expected {
-		t.Errorf("expected '%s' but got '%s'", expected, noComments)
-	}
-})
-		
+func TestGetSection(t *testing.T) {
+	input:= cleanupInput(iniTemplate)
+	got:=GetSections(loadString(input))
+	want:= map[string]map[string]string{"DEFAULT" : {"ServerAliveInterval":"45","Compression":"yes","CompressionLevel" : "9",
+	"ForwardX11" : "yes"},  "bitbucket.org": {"User" : "hg"}, "topsecret.server.com":{"Port":"50022","ForwardX11": "no"}}
+	if  !reflect.DeepEqual(got, want)  {
+		t.Errorf("expected '%s' but got '%s'", want,got)
+	}	
 }
