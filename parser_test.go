@@ -29,3 +29,22 @@ func TestGetSection(t *testing.T) {
 		t.Errorf("expected '%s' but got '%s'", want,got)
 	}	
 }
+func TestGet(t *testing.T) {
+	input:= cleanupInput(iniTemplate)
+	got:=Get(GetSections(loadString(input)),"DEFAULT","ServerAliveInterval")
+	want :="45"
+	if  !reflect.DeepEqual(got, want)  {
+		t.Errorf("expected '%s' but got '%s'", want,got)
+	}
+
+}
+func TestSet(t *testing.T) {
+	input:= cleanupInput(iniTemplate)
+	got:=Set(GetSections(loadString(input)),"DEFAULT","test","15")
+	want :=map[string]map[string]string{"DEFAULT" : {"ServerAliveInterval":"45","Compression":"yes","CompressionLevel" : "9",
+	"ForwardX11" : "yes","test":"15"},  "bitbucket.org": {"User" : "hg"}, "topsecret.server.com":{"Port":"50022","ForwardX11": "no"}}
+	if  !reflect.DeepEqual(got, want)  {
+		t.Errorf("expected '%s' but got '%s'", want,got)
+	}
+
+}

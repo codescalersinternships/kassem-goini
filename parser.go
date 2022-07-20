@@ -63,3 +63,12 @@ func GetSections(input_list []string) map[string]map[string]string{
 	}
 	return sections
 }
+
+func Get(sections map[string]map[string]string, section_name string, key string) string {
+		value := sections[section_name][key]
+		return value
+}
+func Set(sections map[string]map[string]string, section_name string, key string, value string) map[string]map[string]string {
+	sections[section_name][key] = value
+	return sections
+}
