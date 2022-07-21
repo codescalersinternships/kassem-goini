@@ -2,9 +2,19 @@ package parser
 import ("testing"
  		"reflect"
  		"errors"
+		"os"
 		)
 
-var iniTemplate ="[DEFAULT]\nServerAliveInterval = 45\nCompression = yes\nCompressionLevel = 9\nForwardX11 = yes\n[bitbucket.null]\nUser = hg\n[topsecret.server.com]\nPort = 50022\nForwardX11 = no"
+var iniTemplate =`[DEFAULT]
+ServerAliveInterval = 45
+Compression = yes
+CompressionLevel = 9
+ForwardX11 = yes
+[bitbucket.null]
+User = hg
+[topsecret.server.com]
+Port = 50022
+ForwardX11 = no`
 var null string =""
 var wanted_parsedMap= map[string]map[string]string{"DEFAULT" : {"ServerAliveInterval":"45","Compression":"yes","CompressionLevel" : "9",
 		"ForwardX11" : "yes"},  "bitbucket.null": {"User" : "hg"}, "topsecret.server.com":{"Port":"50022","ForwardX11": "no"}}
@@ -153,10 +163,9 @@ func TestSet(t *testing.T) {
 }
 func TestSaveToFile(t *testing.T){
 	got:= SaveToFile("test.ini",iniTemplate)
-	if got!=nil {
-		
-			t.Errorf("expected no error but got '%s'",got)
-		
+	inputString, _ := os.ReadFile("test.ini")
+	if string(inputString)!= iniTemplate || got != nil{
+			t.Errorf("expected '%s' but got '%s', error: %v",iniTemplate,inputString,got)
 	}
 }
 

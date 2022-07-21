@@ -18,9 +18,7 @@ func Parse(ini_input string) (map[string]map[string]string,error)  {
 	scanner := bufio.NewScanner(strings.NewReader(ini_input))
 	out_ini:= make(map[string]map[string]string)  
 	for scanner.Scan() {
-		////////////////////
-		// clean up input //
-		////////////////////
+		// clean up input 
 		if scanner.Text() == "" {
 			continue
 		}
@@ -29,9 +27,9 @@ func Parse(ini_input string) (map[string]map[string]string,error)  {
 			}
 		
 		tmp = strings.TrimLeft(scanner.Text(),"! ||!\t")
-		////////////////////
-		// pars ini input //
-		////////////////////
+	
+		// pars ini input 
+
 		if tmp[0] == '[' && tmp[len(tmp)-1] == ']'{
 			title = tmp[1:len(tmp)-1]
 			strings.TrimSpace(title)
@@ -91,7 +89,7 @@ func (parser *Parser)Set(section_name string, key string, value string) map[stri
 	return parser.nested_map
 }
 
-func (parser *Parser)ToString() string {
+func (parser *Parser)String() string {
 
 	ini_string:= ""
 	for section, keyAndValue:= range parser.nested_map{

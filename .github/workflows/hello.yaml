@@ -3,11 +3,9 @@ name: Go
 on:
   push:
     branches: 
-      - omerTest
       - main
   pull_request:
     branches: 
-     - omerTest
      - main
 
 jobs:
