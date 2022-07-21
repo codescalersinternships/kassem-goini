@@ -1,6 +1,6 @@
 package parser 
 
-import "fmt"
+
 import (
 	"bufio"
  	"strings"
@@ -93,10 +93,11 @@ func (parser *Parser)String() string {
 
 	ini_string:= ""
 	for section, keyAndValue:= range parser.nested_map{
-		fmt.Println(section)
+		
 		ini_string += "["+section+"]\n"
 		for key, value := range keyAndValue{
 			ini_string += key + " = "+value+"\n"
+			
 		}
 	}
 	return strings.TrimSuffix(ini_string, "\n")
@@ -107,7 +108,7 @@ func  SaveToFile(filePath string,ini_string string) (err error) {
 	file, err := os.Create(filePath)
 	defer file.Close()
 	if err != nil {
-		return err
+		return errors.New("create {"+filePath+"}: invalid name")
 	}
 	_, err = file.WriteString(ini_string)
 	return err

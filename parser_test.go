@@ -3,6 +3,7 @@ import ("testing"
  		"reflect"
  		"errors"
 		"os"
+		"fmt"
 		)
 
 var iniTemplate =`[DEFAULT]
@@ -89,7 +90,6 @@ func TestLoadFromFile(t *testing.T){
 		
 		parser1:= Parser{}
 		got  := parser1.LoadFromFile(null)
-
 		want := errors.New("open {"+null+"}: no such file ")
 		if  !reflect.DeepEqual(got, want) {
 			t.Errorf("expected '%s' but got '%s'", want, got)
@@ -142,15 +142,6 @@ func TestGet(t *testing.T){
 	})
 }
 func TestSet(t *testing.T) {
-	t.Run("value of [DEFAULT],ServerAliveInterval as {test}",func(t *testing.T){
-		parser1:= Parser{wanted_parsedMap}
-		got := parser1.Set("DEFAULT","ServerAliveInterval","{test}")
-		want := map[string]map[string]string{"DEFAULT" : {"ServerAliveInterval":"{test}","Compression":"yes","CompressionLevel" : "9",
-		"ForwardX11" : "yes"},  "bitbucket.null": {"User" : "hg"}, "topsecret.server.com":{"Port":"50022","ForwardX11": "no"}}
-		if  !reflect.DeepEqual(want, got ){
-			t.Errorf("expected '%s' but got '%s'", want, got)
-		}	
-	})
 	t.Run("value of [DEFAULT],ServerAliveInterval as null",func(t *testing.T){
 		parser1:= Parser{wanted_parsedMap}
 		got := parser1.Set("DEFAULT","ServerAliveInterval","")
@@ -160,13 +151,53 @@ func TestSet(t *testing.T) {
 			t.Errorf("expected '%s' but got '%s'", want, got)
 		}	
 	})
+	t.Run("value of [DEFAULT],ServerAliveInterval as {test}",func(t *testing.T){
+		parser1:= Parser{wanted_parsedMap}
+		got := parser1.Set("DEFAULT","ServerAliveInterval","{test}")
+		want := map[string]map[string]string{"DEFAULT" : {"ServerAliveInterval":"{test}","Compression":"yes","CompressionLevel" : "9",
+		"ForwardX11" : "yes"},  "bitbucket.null": {"User" : "hg"}, "topsecret.server.com":{"Port":"50022","ForwardX11": "no"}}
+		if  !reflect.DeepEqual(want, got ){
+			t.Errorf("expected '%s' but got '%s'", want, got)
+		}	
+	})
+	
+}
+func TestString(t *testing.T) {
+	t.Run("test string length", func(t *testing.T){
+		parser1:= Parser{wanted_parsedMap}
+		got := parser1.String()
+		expected := `[DEFAULT]
+ServerAliveInterval = {test}
+Compression = yes
+CompressionLevel = 9
+ForwardX11 = yes
+[bitbucket.null]
+User = hg
+[topsecret.server.com]
+Port = 50022
+ForwardX11 = no`
+		if len(got) != len(expected){
+		fmt.Println(expected,got)
+		t.Errorf("expected '%s' but got '%s'", expected, got)
+		}
+	})
+	
 }
 func TestSaveToFile(t *testing.T){
-	got:= SaveToFile("test.ini",iniTemplate)
-	inputString, _ := os.ReadFile("test.ini")
-	if string(inputString)!= iniTemplate || got != nil{
+	t.Run("test save to valid file", func(t *testing.T){
+		got:= SaveToFile("test.ini",iniTemplate)
+		inputString, _ := os.ReadFile("test.ini")
+		if string(inputString)!= iniTemplate {
 			t.Errorf("expected '%s' but got '%s', error: %v",iniTemplate,inputString,got)
-	}
+		}
+	})
+	t.Run("test save to invalid file", func(t *testing.T){
+		got:= SaveToFile("",iniTemplate)
+		expected:=errors.New("create {}: invalid name")
+		if !reflect.DeepEqual(got, expected) {
+			t.Errorf("expected `%s` but got '%s'",expected,got)
+		}
+	})		
 }
 
 
